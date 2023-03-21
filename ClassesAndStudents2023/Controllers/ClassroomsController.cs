@@ -100,6 +100,44 @@ namespace ClassesAndStudents2023.Controllers
             return NoContent();
         }
 
+        [HttpGet("{id}/students")]
+        public async Task<ActionResult<ICollection<Student>>> GetClassroomStudent(int id)
+        {
+            var classroom = await _context.Classrooms.FindAsync(id);
+
+            if (classroom == null)
+            {
+                return NotFound("Classroom does not exist");
+            }
+
+            _context.Entry(classroom).Collection(c => c.Students).Load();
+
+            return Ok(classroom.Students);
+        }
+
+        [HttpPost("{id}/students")]
+        public async Task<ActionResult> AddClassroomStudent(int classroomId, int studentId)
+        {
+            var classroom = await _context.Classrooms.FindAsync(classroomId);
+
+            if (classroom == null)
+            {
+                return NotFound("Classroom does not exist");
+            }
+
+            var student = await _context.Students.FindAsync(studentId);
+
+            if (student == null)
+            {
+                return NotFound("Student does not exist");
+            }
+
+            classroom.Students.Add(student);
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
         private bool ClassroomExists(int id)
         {
             return _context.Classrooms.Any(e => e.ClassroomId == id);

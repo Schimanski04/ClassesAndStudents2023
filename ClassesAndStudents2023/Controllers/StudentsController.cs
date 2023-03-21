@@ -26,9 +26,49 @@ namespace ClassesAndStudents2023.Controllers
         // List
         // GET: api/Students
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Student>>> GetStudents()
+        public async Task<ActionResult<IEnumerable<Student>>> GetStudents(
+            string? firstname,
+            string? lastname,
+            string? search,
+            int? classroom,
+            string? order
+            )
         {
             _logger.LogInformation("Fetching Students");
+            IQueryable<Student> students = _context.Students;
+
+            if (!String.IsNullOrEmpty(firstname))
+            {
+                students = students.Where(s => s.Firstname.Contains(firstname));
+            }
+            if (!String.IsNullOrEmpty(lastname))
+            {
+                students = students.Where(s => s.Lastname.Contains(lastname));
+            }
+            if (!String.IsNullOrEmpty(search))
+            {
+                students = students.Where(s => s.Firstname.Contains(search) || s.Lastname.Contains(search));
+            }
+            if (classroom != null)
+            {
+                students = students.Where(s => s.ClassroomId == classroom);
+            }
+
+            if (String.IsNullOrEmpty(order))
+            {
+                switch (order)
+                {
+                    case "firstname":
+                        students = students.OrderBy(s => s.Firstname);
+                        break;
+                    case "lastname":
+                        students = students.OrderBy(s => s.Lastname);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
             return await _context.Students.ToListAsync();
         }
 
@@ -41,6 +81,7 @@ namespace ClassesAndStudents2023.Controllers
 
             if (student == null)
             {
+                _logger.LogError($"Requested student {id} not found");
                 return NotFound();
             }
 

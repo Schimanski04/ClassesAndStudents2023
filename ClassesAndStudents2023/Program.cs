@@ -1,7 +1,19 @@
 using ClassesAndStudents2023.Data;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Newtonsoft;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Logging to file
+var sLog = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("Logs\\log.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(sLog);
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
